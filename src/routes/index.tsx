@@ -2,9 +2,15 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useMutation } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
-import { ArrowUpRight, AlertTriangle } from "lucide-react";
+import { ArrowUpRight, AlertTriangle, Lightbulb } from "lucide-react";
 
-import { runResearch, type Briefing } from "@/lib/research.functions";
+import {
+  runResearch,
+  checkTopicFit,
+  INDUSTRY_LIST,
+  type Briefing,
+  type TopicFit,
+} from "@/lib/research.functions";
 import { AgentProgress } from "@/components/AgentProgress";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,6 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -39,18 +46,25 @@ export const Route = createFileRoute("/")({
   component: Index,
 });
 
-const INDUSTRIES = [
-  "Manufacturing",
-  "Pharma",
-  "Finance",
-  "Retail",
-  "Public Sector",
-  "Energy",
-  "Automotive",
-  "IT",
-  "Logistics",
-  "Sustainability",
-];
+const INDUSTRIES = INDUSTRY_LIST;
+
+const SUGGESTED_TOPICS: Record<string, string[]> = {
+  "All Industries / General": [
+    "Enterprise AI agents and workforce impact",
+    "Supply chain resilience",
+    "Cost of capital and investment outlook",
+  ],
+  Manufacturing: ["Factory automation and robotics", "Reshoring and capacity investment", "Industrial AI and predictive maintenance"],
+  Pharma: ["Pharmacy benefit managers (PBM) reform", "GLP-1 market dynamics", "Clinical trial AI and drug discovery"],
+  Finance: ["Basel III endgame and capital rules", "AI in risk and compliance", "Private credit growth"],
+  Retail: ["Consumer spending shifts", "Retail media networks", "AI-driven personalisation"],
+  "Public Sector": ["Government AI procurement", "Digital public infrastructure", "Public healthcare funding"],
+  Energy: ["Grid capacity and data centre demand", "LNG market dynamics", "Renewables project economics"],
+  Automotive: ["EV demand and pricing pressure", "Software-defined vehicles", "Battery supply chain"],
+  IT: ["Enterprise AI agents and workforce impact", "Cloud cost optimisation", "Cybersecurity threat landscape"],
+  Logistics: ["Freight rates and capacity", "Warehouse automation", "Shipping route disruption"],
+  Sustainability: ["CSRD and reporting requirements", "Carbon markets", "Scope 3 emissions in supply chains"],
+};
 
 const TIMEFRAMES = [
   { value: "7", label: "Last 7 Days" },
@@ -72,13 +86,29 @@ function Index() {
   const [industry, setIndustry] = useState("Manufacturing");
   const [topic, setTopic] = useState("");
   const [timeframe, setTimeframe] = useState<"7" | "30" | "90">("30");
+  const [fit, setFit] = useState<TopicFit | null>(null);
 
   const research = useServerFn(runResearch);
-  const mutation = useMutation<Briefing, Error>({
-    mutationFn: () => research({ data: { industry, topic: topic.trim(), timeframe } }),
+  const checkFit = useServerFn(checkTopicFit);
+
+  const mutation = useMutation<Briefing | null, Error, { skipFitCheck?: boolean } | void>({
+    mutationFn: async (opts) => {
+      setFit(null);
+      const trimmed = topic.trim();
+      if (!opts?.skipFitCheck && trimmed) {
+        const result = await checkFit({ data: { industry, topic: trimmed } });
+        if (!result.related) {
+          setFit(result);
+          return null;
+        }
+      }
+      return research({ data: { industry, topic: trimmed, timeframe } });
+    },
   });
 
-  const briefing = mutation.data;
+  const briefing = mutation.data ?? null;
+  const suggestions = SUGGESTED_TOPICS[industry] ?? [];
+
 
   return (
     <main className="min-h-screen bg-background">
@@ -120,11 +150,11 @@ function Index() {
             </div>
 
             <div className="space-y-2">
-              <Label className="rule-label">Topic</Label>
+              <Label className="rule-label">Topic — optional</Label>
               <Input
                 value={topic}
                 onChange={(e) => setTopic(e.target.value)}
-                placeholder="Enterprise AI agents and workforce impact"
+                placeholder="Leave blank for broad industry trends"
                 className="rounded-none border-x-0 border-t-0 border-b bg-transparent px-0 shadow-none focus-visible:ring-0"
               />
             </div>
@@ -146,17 +176,77 @@ function Index() {
             </div>
           </div>
 
+          {suggestions.length > 0 && (
+            <div className="mt-8 flex flex-wrap items-center gap-2">
+              <span className="rule-label mr-1 flex items-center gap-1.5">
+                <Lightbulb className="size-3.5" />
+                Suggested topics
+              </span>
+              {suggestions.map((s) => (
+                <button
+                  key={s}
+                  type="button"
+                  onClick={() => setTopic(s)}
+                  className="border border-border px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:border-accent hover:text-foreground"
+                >
+                  {s}
+                </button>
+              ))}
+            </div>
+          )}
+
           <div className="mt-10">
             <Button
               size="lg"
               className="rounded-none px-8"
-              disabled={mutation.isPending || topic.trim().length === 0}
-              onClick={() => mutation.mutate()}
+              disabled={mutation.isPending}
+              onClick={() => mutation.mutate({})}
             >
-              {mutation.isPending ? "Researching…" : "Run Research Agent"}
+              {mutation.isPending
+                ? "Researching…"
+                : topic.trim().length === 0
+                  ? "Run Broad Industry Briefing"
+                  : "Run Research Agent"}
             </Button>
+            {topic.trim().length === 0 && (
+              <p className="mt-3 text-xs text-muted-foreground">
+                No topic given — the agent will brief on the most consequential developments in{" "}
+                {industry === "All Industries / General" ? "the wider economy" : industry}.
+              </p>
+            )}
           </div>
         </section>
+
+        {fit && !fit.related && (
+          <section className="my-10 border border-accent/40 bg-secondary/40 p-6">
+            <p className="rule-label">Relevance check</p>
+            <p className="mt-2 text-sm text-foreground">
+              {fit.message ||
+                `“${topic.trim()}” doesn't look related to ${industry}.`}
+            </p>
+            <div className="mt-4 flex flex-wrap gap-3">
+              {fit.suggestedIndustry && (
+                <Button
+                  variant="outline"
+                  className="rounded-none"
+                  onClick={() => {
+                    setIndustry(fit.suggestedIndustry!);
+                    setFit(null);
+                  }}
+                >
+                  Switch to {fit.suggestedIndustry}
+                </Button>
+              )}
+              <Button
+                variant="ghost"
+                className="rounded-none"
+                onClick={() => mutation.mutate({ skipFitCheck: true })}
+              >
+                Run anyway
+              </Button>
+            </div>
+          </section>
+        )}
 
         {(mutation.isPending || briefing) && (
           <section className="border-t border-border py-10">
@@ -164,6 +254,7 @@ function Index() {
             <AgentProgress done={!mutation.isPending && !!briefing} />
           </section>
         )}
+
 
         {mutation.isError && (
           <section className="my-10 flex items-start gap-3 border border-destructive/30 bg-destructive/5 p-6">
