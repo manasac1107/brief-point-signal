@@ -1,386 +1,54 @@
 # SignalBrief AI
 
-Absolutely.
+## Live App
 
-In fact, I would tell Lovable to throw away 80% of the current app and focus on the actual agent.
+**[brief-point-signal.lovable.app](https://brief-point-signal.lovable.app)**
 
-Here's the prompt I'd give it.
+## Overview
 
-SignalBrief Research Agent V1
+SignalBrief is a research agent, not a report generator. Given an industry, topic, and timeframe, it searches live web sources, extracts key developments and evidence, and synthesizes an executive-ready briefing with cited sources — in under 60 seconds.
 
-Build a modern, production-quality web application called SignalBrief Research Agent.
+**Pipeline:** Industry + Topic + Timeframe → Search web → Collect sources → Read & extract content → Identify developments → Generate briefing → Return citations
 
-Product Vision
+## Product Vision
 
-SignalBrief is not a report generator.
+The application prioritizes live retrieval and source-backed synthesis over model memory. It should never claim information came from a source unless that source was actually retrieved, and never fabricate sources or pretend research was performed. If live retrieval fails, it should say so plainly rather than guessing.
 
-SignalBrief is a research agent.
+## Interface
 
-The user provides:
+### Hero Section
 
-Industry
+**SignalBrief Research Agent**
+*Give the agent an industry, topic, and timeframe. The agent researches the web and delivers an executive-ready briefing with cited sources.*
 
-Topic
+### Inputs
 
-Timeframe
+| Field | Details |
+|---|---|
+| Industry | Manufacturing, Pharma, Finance, Retail, Public Sector, Energy, Automotive, IT, Logistics, Sustainability |
+| Topic | Free text (e.g. "Enterprise AI agents and workforce impact") |
+| Timeframe | Last 7 Days, Last 30 Days, Last 90 Days |
+| Action | **Run Research Agent** button |
 
-The agent then:
+### Agent Workflow Display
 
-Searches live web sources
+On submit, animated progress steps show: Searching live web → Reading sources → Extracting evidence → Consolidating themes → Generating executive briefing → Attaching citations.
 
-Reads relevant articles and reports
+## Output Format
 
-Extracts major developments
+**Executive Summary** — 3–5 paragraphs written for executives, covering what happened, why it matters, and what leaders should pay attention to.
 
-Identifies statistics and evidence
+**Key Developments** — Each entry includes a title, analysis, and business implication.
 
-Synthesizes findings
+**Industry Impact** — Short-term impact, medium-term impact, and strategic significance.
 
-Produces an executive briefing
+**Leadership Questions** — 5–8 executive-level questions (e.g. "How should organizations prepare for AI-enabled workforce redesign?").
 
-Displays the sources used
+**Sources** — Source title, publisher, publication date, and URL for every major claim.
 
-The application must prioritize live retrieval and source-backed synthesis over model memory.
+### Local setup
 
-UI Requirements
-
-Create a clean executive-grade interface.
-
-Hero Section
-
-Title:
-
-
-
-SignalBrief Research Agent
-
-
-
-Subtitle:
-
-
-
-Give the agent an industry, topic, and timeframe.
-
-The agent researches the web and delivers an executive-ready briefing with cited sources.
-
-
-
-Inputs
-
-Industry Dropdown
-
-Include:
-
-
-
-Manufacturing
-
-Pharma
-
-Finance
-
-Retail
-
-Public Sector
-
-Energy
-
-Automotive
-
-IT
-
-Logistics
-
-Sustainability
-
-
-
-Topic Field
-
-Example placeholder:
-
-
-
-Enterprise AI agents and workforce impact
-
-
-
-Timeframe Dropdown
-
-
-
-Last 7 Days
-
-Last 30 Days
-
-Last 90 Days
-
-
-
-Button
-
-
-
-Run Research Agent
-
-
-
-Agent Workflow Display
-
-When the user clicks Run Research Agent show progress:
-
-
-
-Searching live web
-
-Reading sources
-
-Extracting evidence
-
-Consolidating themes
-
-Generating executive briefing
-
-Attaching citations
-
-
-
-Display these as animated progress steps.
-
-Agent Behavior
-
-The agent should perform live web research.
-
-The workflow:
-
-
-
-Industry
-
-+
-
-Topic
-
-+
-
-Timeframe
-
-↓
-
-Search web
-
-↓
-
-Collect relevant sources
-
-↓
-
-Read and extract content
-
-↓
-
-Identify developments
-
-↓
-
-Create executive briefing
-
-↓
-
-Return citations
-
-
-
-Required Output Format
-
-Executive Summary
-
-3–5 paragraphs.
-
-Should be written for executives.
-
-Explain:
-
-what happened
-
-why it matters
-
-what leaders should pay attention to
-
-Key Developments
-
-Each development should contain:
-
-
-
-Title
-
-Analysis
-
-Business Implication
-
-
-
-Industry Impact
-
-Explain:
-
-
-
-Short-term impact
-
-Medium-term impact
-
-Strategic significance
-
-
-
-Leadership Questions
-
-Generate:
-
-
-
-5-8 executive questions
-
-
-
-Example:
-
-
-
-How should organizations prepare for AI-enabled workforce redesign?
-
-
-
-Sources
-
-Display:
-
-
-
-Source Title
-
-Publisher
-
-Publication Date
-
-URL
-
-
-
-All major claims should be traceable to sources.
-
-Important Constraints
-
-Never claim that information came from a source unless it was actually retrieved.
-
-If live retrieval fails:
-
-show
-
-
-
-Unable to perform live research.
-
-Please verify that web search and retrieval tools are configured.
-
-
-
-Do not generate fake sources.
-
-Do not pretend research was performed.
-
-Design Language
-
-Style:
-
-
-
-Bloomberg Intelligence
-
-+
-
-McKinsey
-
-+
-
-CB Insights
-
-
-
-Characteristics:
-
-
-
-Minimal
-
-Executive
-
-Premium
-
-Whitespace-heavy
-
-Professional
-
-Source-first
-
-
-
-No bright neon colors.
-
-Use:
-
-
-
-Slate
-
-White
-
-Navy
-
-Muted blue accents
-
-
-
-MVP Goal
-
-The application should answer the question:
-
-
-
-What happened in this industry or topic recently,
-
-and why should an executive care?
-
-
-
-The agent should return a concise, evidence-based briefing in under 60 seconds.
-
-That's the prompt I'd use.
-
-The reason I like it is that it keeps the product focused on one thing only:
-
-Research → Synthesis → Executive Briefing
-
-That's a genuine agent, and it's a much stronger V1 than trying to build an entire intelligence platform on day one.
-
-This project was built with [Lovable](https://lovable.dev).
-
-**Live app**: https://brief-point-signal.lovable.app
-
-## Build with Lovable
-
-Continue developing this project in the [Lovable editor](https://lovable.dev/projects/0710f2a9-e514-4eec-b5f9-50e027be1cb4).
-
-- **Ship faster**: describe what you want to build and Lovable handles the code.
-- **Stay in sync**: every change made in Lovable is committed straight to this repository.
-- **Full ownership**: this code is yours. Push to `main` on GitHub and your changes sync back into Lovable, ready for your next prompt.
-
-## Development
-
-Prefer working locally? You need Node.js and npm — [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating).
+Requires Node.js and npm ([install via nvm](https://github.com/nvm-sh/nvm#installing-and-updating)).
 
 ```sh
 git clone <this-repository-url>
@@ -388,3 +56,5 @@ cd <repository-name>
 npm i
 npm run dev
 ```
+</content>
+</invoke>
