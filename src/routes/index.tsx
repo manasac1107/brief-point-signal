@@ -313,7 +313,28 @@ function Index() {
               </div>
             </Section>
 
-            <Section label="04" title="Leadership Questions">
+            <Section label="05" title="Food for Thought">
+              <div className="max-w-3xl space-y-6">
+                {briefing.foodForThought.length === 0 && (
+                  <p className="text-sm text-muted-foreground">
+                    No thought pieces were generated for this briefing.
+                  </p>
+                )}
+                {briefing.foodForThought.map((f, i) => (
+                  <div key={i} className="border-l-2 border-accent pl-5">
+                    <p className="font-display text-[1.05rem] leading-7 text-foreground">
+                      {f.idea}
+                    </p>
+                    <p className="mt-2 text-sm leading-7 text-muted-foreground">
+                      <span className="rule-label mr-2">Why now</span>
+                      {f.why}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </Section>
+
+            <Section label="06" title="Sources">
               <ol className="max-w-3xl space-y-4">
                 {briefing.leadershipQuestions.map((q, i) => (
                   <li key={i} className="flex gap-4 text-[0.95rem] leading-7 text-foreground/90">
