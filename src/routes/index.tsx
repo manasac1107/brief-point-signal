@@ -150,11 +150,11 @@ function Index() {
             </div>
 
             <div className="space-y-2">
-              <Label className="rule-label">Topic</Label>
+              <Label className="rule-label">Topic — optional</Label>
               <Input
                 value={topic}
                 onChange={(e) => setTopic(e.target.value)}
-                placeholder="Enterprise AI agents and workforce impact"
+                placeholder="Leave blank for broad industry trends"
                 className="rounded-none border-x-0 border-t-0 border-b bg-transparent px-0 shadow-none focus-visible:ring-0"
               />
             </div>
@@ -176,17 +176,77 @@ function Index() {
             </div>
           </div>
 
+          {suggestions.length > 0 && (
+            <div className="mt-8 flex flex-wrap items-center gap-2">
+              <span className="rule-label mr-1 flex items-center gap-1.5">
+                <Lightbulb className="size-3.5" />
+                Suggested topics
+              </span>
+              {suggestions.map((s) => (
+                <button
+                  key={s}
+                  type="button"
+                  onClick={() => setTopic(s)}
+                  className="border border-border px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:border-accent hover:text-foreground"
+                >
+                  {s}
+                </button>
+              ))}
+            </div>
+          )}
+
           <div className="mt-10">
             <Button
               size="lg"
               className="rounded-none px-8"
-              disabled={mutation.isPending || topic.trim().length === 0}
-              onClick={() => mutation.mutate()}
+              disabled={mutation.isPending}
+              onClick={() => mutation.mutate({})}
             >
-              {mutation.isPending ? "Researching…" : "Run Research Agent"}
+              {mutation.isPending
+                ? "Researching…"
+                : topic.trim().length === 0
+                  ? "Run Broad Industry Briefing"
+                  : "Run Research Agent"}
             </Button>
+            {topic.trim().length === 0 && (
+              <p className="mt-3 text-xs text-muted-foreground">
+                No topic given — the agent will brief on the most consequential developments in{" "}
+                {industry === "All Industries / General" ? "the wider economy" : industry}.
+              </p>
+            )}
           </div>
         </section>
+
+        {fit && !fit.related && (
+          <section className="my-10 border border-accent/40 bg-secondary/40 p-6">
+            <p className="rule-label">Relevance check</p>
+            <p className="mt-2 text-sm text-foreground">
+              {fit.message ||
+                `“${topic.trim()}” doesn't look related to ${industry}.`}
+            </p>
+            <div className="mt-4 flex flex-wrap gap-3">
+              {fit.suggestedIndustry && (
+                <Button
+                  variant="outline"
+                  className="rounded-none"
+                  onClick={() => {
+                    setIndustry(fit.suggestedIndustry!);
+                    setFit(null);
+                  }}
+                >
+                  Switch to {fit.suggestedIndustry}
+                </Button>
+              )}
+              <Button
+                variant="ghost"
+                className="rounded-none"
+                onClick={() => mutation.mutate({ skipFitCheck: true })}
+              >
+                Run anyway
+              </Button>
+            </div>
+          </section>
+        )}
 
         {(mutation.isPending || briefing) && (
           <section className="border-t border-border py-10">
@@ -194,6 +254,7 @@ function Index() {
             <AgentProgress done={!mutation.isPending && !!briefing} />
           </section>
         )}
+
 
         {mutation.isError && (
           <section className="my-10 flex items-start gap-3 border border-destructive/30 bg-destructive/5 p-6">
