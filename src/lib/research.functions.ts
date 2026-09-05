@@ -97,7 +97,8 @@ export const runResearch = createServerFn({ method: "POST" })
     const corpus = docs
       .map((d, i) => {
         const text: string = d.markdown || d.description || "";
-        return `### SOURCE ${i + 1}\nTitle: ${sources[i].title}\nPublisher: ${sources[i].publisher}\nDate: ${sources[i].publishedDate ?? "unknown"}\nURL: ${d.url}\n\n${text.slice(0, 6000)}`;
+        const s = sources[i]!;
+        return `### SOURCE ${i + 1}\nTitle: ${s.title}\nPublisher: ${s.publisher}\nDate: ${s.publishedDate ?? "unknown"}\nURL: ${d.url}\n\n${text.slice(0, 6000)}`;
       })
       .join("\n\n---\n\n");
 
