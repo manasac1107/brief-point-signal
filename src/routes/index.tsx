@@ -335,17 +335,6 @@ function Index() {
             </Section>
 
             <Section label="06" title="Sources">
-              <ol className="max-w-3xl space-y-4">
-                {briefing.leadershipQuestions.map((q, i) => (
-                  <li key={i} className="flex gap-4 text-[0.95rem] leading-7 text-foreground/90">
-                    <span className="rule-label pt-1">Q{i + 1}</span>
-                    <span>{q}</span>
-                  </li>
-                ))}
-              </ol>
-            </Section>
-
-            <Section label="05" title="Sources">
               <div className="divide-y divide-border border-y border-border">
                 {briefing.sources.map((s, i) => (
                   <a
