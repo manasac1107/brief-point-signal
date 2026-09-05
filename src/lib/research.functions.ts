@@ -3,7 +3,7 @@ import { z } from "zod";
 
 const inputSchema = z.object({
   industry: z.string().min(1),
-  topic: z.string().min(1),
+  topic: z.string().default(""),
   timeframe: z.enum(["7", "30", "90"]),
 });
 
@@ -22,6 +22,26 @@ export type Briefing = {
   sources: ResearchSource[];
 };
 
+export type TopicFit = {
+  related: boolean;
+  suggestedIndustry: string | null;
+  message: string;
+};
+
+export const INDUSTRY_LIST = [
+  "All Industries / General",
+  "Manufacturing",
+  "Pharma",
+  "Finance",
+  "Retail",
+  "Public Sector",
+  "Energy",
+  "Automotive",
+  "IT",
+  "Logistics",
+  "Sustainability",
+];
+
 const TBS: Record<string, string> = { "7": "qdr:w", "30": "qdr:m", "90": "qdr:m" };
 
 function publisherFromUrl(url: string) {
@@ -31,6 +51,56 @@ function publisherFromUrl(url: string) {
     return "Unknown";
   }
 }
+
+export const checkTopicFit = createServerFn({ method: "POST" })
+  .inputValidator((data: unknown) =>
+    z.object({ industry: z.string().min(1), topic: z.string() }).parse(data),
+  )
+  .handler(async ({ data }): Promise<TopicFit> => {
+    const topic = data.topic.trim();
+    const lovableKey = process.env["LOVABLE_API_KEY"];
+    if (!topic || data.industry === "All Industries / General" || !lovableKey) {
+      return { related: true, suggestedIndustry: null, message: "" };
+    }
+
+    try {
+      const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${lovableKey}` },
+        body: JSON.stringify({
+          model: "google/gemini-3-flash-preview",
+          response_format: { type: "json_object" },
+          messages: [
+            {
+              role: "system",
+              content:
+                "You judge whether a research topic plausibly belongs to a selected industry. Be permissive: only flag clear mismatches. Available industries: " +
+                INDUSTRY_LIST.join(", ") +
+                '. Return JSON {"related": boolean, "suggestedIndustry": string|null, "message": string}. suggestedIndustry must be one of the listed industries or null. message is one short sentence for an executive user.',
+            },
+            { role: "user", content: `Industry: ${data.industry}\nTopic: ${topic}` },
+          ],
+        }),
+      });
+      if (!res.ok) return { related: true, suggestedIndustry: null, message: "" };
+      const json: any = await res.json();
+      const parsed = JSON.parse(
+        (json?.choices?.[0]?.message?.content ?? "{}").replace(/^```json\s*|```$/g, "").trim(),
+      );
+      const suggested =
+        typeof parsed.suggestedIndustry === "string" && INDUSTRY_LIST.includes(parsed.suggestedIndustry)
+          ? parsed.suggestedIndustry
+          : null;
+      return {
+        related: parsed.related !== false,
+        suggestedIndustry: suggested,
+        message: typeof parsed.message === "string" ? parsed.message : "",
+      };
+    } catch {
+      return { related: true, suggestedIndustry: null, message: "" };
+    }
+  });
+
 
 export const runResearch = createServerFn({ method: "POST" })
   .inputValidator((data: unknown) => inputSchema.parse(data))
