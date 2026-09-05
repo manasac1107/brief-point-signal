@@ -19,6 +19,7 @@ export type Briefing = {
   keyDevelopments: { title: string; analysis: string; businessImplication: string }[];
   industryImpact: { shortTerm: string; mediumTerm: string; strategic: string };
   leadershipQuestions: string[];
+  foodForThought: { idea: string; why: string }[];
   sources: ResearchSource[];
 };
 
@@ -194,7 +195,8 @@ Produce JSON with exactly this shape:
   "executiveSummary": [3-5 paragraph strings written for C-level readers: what happened, why it matters, what leaders should watch],
   "keyDevelopments": [4-6 objects: {"title": string, "analysis": string, "businessImplication": string}],
   "industryImpact": {"shortTerm": string, "mediumTerm": string, "strategic": string},
-  "leadershipQuestions": [5-8 sharp executive questions]
+  "leadershipQuestions": [5-8 sharp executive questions],
+  "foodForThought": [3-5 objects: {"idea": string, "why": string}] — provocative ideas, contrarian takes, or unexpected connections drawn from the sources. Each "idea" is one bold thought worth debating (not a question), and "why" explains in one sentence why it deserves attention now. Ground every idea in the sources; label speculation as speculation.
 }
 Include concrete statistics and named entities only when they appear in the sources, each followed by its [S#] marker.`;
 
@@ -236,6 +238,7 @@ Include concrete statistics and named entities only when they appear in the sour
       keyDevelopments: parsed.keyDevelopments ?? [],
       industryImpact: parsed.industryImpact ?? { shortTerm: "", mediumTerm: "", strategic: "" },
       leadershipQuestions: parsed.leadershipQuestions ?? [],
+      foodForThought: Array.isArray(parsed.foodForThought) ? parsed.foodForThought : [],
       sources,
     };
   });
