@@ -46,18 +46,25 @@ export const Route = createFileRoute("/")({
   component: Index,
 });
 
-const INDUSTRIES = [
-  "Manufacturing",
-  "Pharma",
-  "Finance",
-  "Retail",
-  "Public Sector",
-  "Energy",
-  "Automotive",
-  "IT",
-  "Logistics",
-  "Sustainability",
-];
+const INDUSTRIES = INDUSTRY_LIST;
+
+const SUGGESTED_TOPICS: Record<string, string[]> = {
+  "All Industries / General": [
+    "Enterprise AI agents and workforce impact",
+    "Supply chain resilience",
+    "Cost of capital and investment outlook",
+  ],
+  Manufacturing: ["Factory automation and robotics", "Reshoring and capacity investment", "Industrial AI and predictive maintenance"],
+  Pharma: ["Pharmacy benefit managers (PBM) reform", "GLP-1 market dynamics", "Clinical trial AI and drug discovery"],
+  Finance: ["Basel III endgame and capital rules", "AI in risk and compliance", "Private credit growth"],
+  Retail: ["Consumer spending shifts", "Retail media networks", "AI-driven personalisation"],
+  "Public Sector": ["Government AI procurement", "Digital public infrastructure", "Public healthcare funding"],
+  Energy: ["Grid capacity and data centre demand", "LNG market dynamics", "Renewables project economics"],
+  Automotive: ["EV demand and pricing pressure", "Software-defined vehicles", "Battery supply chain"],
+  IT: ["Enterprise AI agents and workforce impact", "Cloud cost optimisation", "Cybersecurity threat landscape"],
+  Logistics: ["Freight rates and capacity", "Warehouse automation", "Shipping route disruption"],
+  Sustainability: ["CSRD and reporting requirements", "Carbon markets", "Scope 3 emissions in supply chains"],
+};
 
 const TIMEFRAMES = [
   { value: "7", label: "Last 7 Days" },
@@ -79,13 +86,29 @@ function Index() {
   const [industry, setIndustry] = useState("Manufacturing");
   const [topic, setTopic] = useState("");
   const [timeframe, setTimeframe] = useState<"7" | "30" | "90">("30");
+  const [fit, setFit] = useState<TopicFit | null>(null);
 
   const research = useServerFn(runResearch);
-  const mutation = useMutation<Briefing, Error>({
-    mutationFn: () => research({ data: { industry, topic: topic.trim(), timeframe } }),
+  const checkFit = useServerFn(checkTopicFit);
+
+  const mutation = useMutation<Briefing | null, Error, { skipFitCheck?: boolean } | void>({
+    mutationFn: async (opts) => {
+      setFit(null);
+      const trimmed = topic.trim();
+      if (!opts?.skipFitCheck && trimmed) {
+        const result = await checkFit({ data: { industry, topic: trimmed } });
+        if (!result.related) {
+          setFit(result);
+          return null;
+        }
+      }
+      return research({ data: { industry, topic: trimmed, timeframe } });
+    },
   });
 
-  const briefing = mutation.data;
+  const briefing = mutation.data ?? null;
+  const suggestions = SUGGESTED_TOPICS[industry] ?? [];
+
 
   return (
     <main className="min-h-screen bg-background">
