@@ -115,7 +115,13 @@ export const runResearch = createServerFn({ method: "POST" })
 
     const label =
       data.timeframe === "7" ? "last 7 days" : data.timeframe === "30" ? "last 30 days" : "last 90 days";
-    const query = `${data.industry} industry: ${data.topic} — news, developments and data (${label})`;
+    const topic = data.topic.trim();
+    const isGeneral = data.industry === "All Industries / General";
+    const scope = isGeneral ? "Global cross-industry business" : `${data.industry} industry`;
+    const query = topic
+      ? `${scope}: ${topic} — news, developments and data (${label})`
+      : `${scope}: most important trends, news, developments and data (${label})`;
+
 
     let searchJson: any;
     try {
