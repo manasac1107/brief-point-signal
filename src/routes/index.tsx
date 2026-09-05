@@ -313,7 +313,7 @@ function Index() {
               </div>
             </Section>
 
-            <Section label="05" title="Food for Thought">
+            <Section label="05" title="Signals to Monitor">
               <div className="max-w-3xl space-y-6">
                 {briefing.foodForThought.length === 0 && (
                   <p className="text-sm text-muted-foreground">
