@@ -181,8 +181,8 @@ export const runResearch = createServerFn({ method: "POST" })
     const system =
       "You are a senior research analyst producing executive briefings in the style of Bloomberg Intelligence and McKinsey. Use ONLY the retrieved source material provided. Never invent facts, statistics, organisations or sources. Reference sources inline as [S1], [S2] matching the SOURCE numbers. Return valid JSON only.";
 
-    const prompt = `Industry: ${data.industry}
-Topic: ${data.topic}
+    const prompt = `Industry: ${isGeneral ? "All industries (cross-industry overview)" : data.industry}
+Topic: ${topic || "Broad industry trends (no specific topic given — cover the most consequential developments)"}
 Timeframe: ${label}
 
 Retrieved sources:
