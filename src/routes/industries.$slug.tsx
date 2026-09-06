@@ -91,7 +91,7 @@ function IndustryPage() {
           <Link to="/" className="font-display text-lg tracking-tight">
             SignalBrief
           </Link>
-          <span className="rule-label">Research Agent · V1</span>
+          <span className="rule-label">Research Agent · V2</span>
         </div>
       </header>
 
