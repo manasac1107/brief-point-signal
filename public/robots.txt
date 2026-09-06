@@ -12,3 +12,5 @@ Allow: /
 
 User-agent: *
 Allow: /
+
+Sitemap: https://brief-point-signal.lovable.app/sitemap.xml

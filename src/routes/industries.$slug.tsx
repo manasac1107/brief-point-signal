@@ -1,17 +1,11 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useMutation } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import { AlertTriangle, Lightbulb } from "lucide-react";
 
-import {
-  runResearch,
-  checkTopicFit,
-  INDUSTRY_LIST,
-  type Briefing,
-  type TopicFit,
-} from "@/lib/research.functions";
-import { INDUSTRIES, GENERAL_TOPICS } from "@/lib/industries";
+import { runResearch, checkTopicFit, type Briefing, type TopicFit } from "@/lib/research.functions";
+import { INDUSTRIES, industryBySlug } from "@/lib/industries";
 import { AgentProgress } from "@/components/AgentProgress";
 import { BriefingOutput } from "@/components/BriefingOutput";
 import { Button } from "@/components/ui/button";
@@ -25,35 +19,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-
-export const Route = createFileRoute("/")({
-  head: () => ({
-    meta: [
-      { title: "SignalBrief Research Agent — Executive Briefings from Live Sources" },
-      {
-        name: "description",
-        content:
-          "Give the agent an industry, topic, and timeframe. It researches the live web and returns an executive briefing with cited sources.",
-      },
-      { property: "og:title", content: "SignalBrief Research Agent" },
-      {
-        property: "og:description",
-        content:
-          "Live web research synthesized into an executive-ready briefing with traceable sources.",
-      },
-      { property: "og:type", content: "website" },
-      { property: "og:url", content: "https://brief-point-signal.lovable.app/" },
-      { name: "twitter:card", content: "summary_large_image" },
-    ],
-    links: [{ rel: "canonical", href: "https://brief-point-signal.lovable.app/" }],
-  }),
-  component: Index,
-});
-
-const SUGGESTED_TOPICS: Record<string, string[]> = {
-  "All Industries / General": GENERAL_TOPICS,
-  ...Object.fromEntries(INDUSTRIES.map((i) => [i.name, i.suggestedTopics])),
-};
+const BASE_URL = "https://brief-point-signal.lovable.app";
 
 const TIMEFRAMES = [
   { value: "7", label: "Last 7 Days" },
@@ -61,8 +27,38 @@ const TIMEFRAMES = [
   { value: "90", label: "Last 90 Days" },
 ] as const;
 
-function Index() {
-  const [industry, setIndustry] = useState("Manufacturing");
+export const Route = createFileRoute("/industries/$slug")({
+  loader: ({ params }) => {
+    const industry = industryBySlug(params.slug);
+    if (!industry) throw notFound();
+    return { industry };
+  },
+  head: ({ loaderData, params }) => {
+    if (!loaderData) {
+      return { meta: [{ title: "Not found" }, { name: "robots", content: "noindex" }] };
+    }
+    const { industry } = loaderData;
+    const title = `${industry.name} Industry Briefings — SignalBrief`;
+    const description = industry.description;
+    const url = `${BASE_URL}/industries/${params.slug}`;
+    return {
+      meta: [
+        { title },
+        { name: "description", content: description },
+        { property: "og:title", content: title },
+        { property: "og:description", content: description },
+        { property: "og:url", content: url },
+        { property: "og:type", content: "website" },
+        { name: "twitter:card", content: "summary_large_image" },
+      ],
+      links: [{ rel: "canonical", href: url }],
+    };
+  },
+  component: IndustryPage,
+});
+
+function IndustryPage() {
+  const { industry } = Route.useLoaderData();
   const [topic, setTopic] = useState("");
   const [timeframe, setTimeframe] = useState<"7" | "30" | "90">("30");
   const [fit, setFit] = useState<TopicFit | null>(null);
@@ -75,25 +71,26 @@ function Index() {
       setFit(null);
       const trimmed = topic.trim();
       if (!opts?.skipFitCheck && trimmed) {
-        const result = await checkFit({ data: { industry, topic: trimmed } });
+        const result = await checkFit({ data: { industry: industry.name, topic: trimmed } });
         if (!result.related) {
           setFit(result);
           return null;
         }
       }
-      return research({ data: { industry, topic: trimmed, timeframe } });
+      return research({ data: { industry: industry.name, topic: trimmed, timeframe } });
     },
   });
 
   const briefing = mutation.data ?? null;
-  const suggestions = SUGGESTED_TOPICS[industry] ?? [];
-
+  const others = INDUSTRIES.filter((i) => i.slug !== industry.slug);
 
   return (
     <main className="min-h-screen bg-background">
       <header className="border-b border-border">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-5">
-          <span className="font-display text-lg tracking-tight">SignalBrief</span>
+          <Link to="/" className="font-display text-lg tracking-tight">
+            SignalBrief
+          </Link>
           <span className="rule-label">Research Agent · V1</span>
         </div>
       </header>
@@ -102,38 +99,21 @@ function Index() {
         <section className="py-20">
           <p className="rule-label">Live retrieval · Source-backed synthesis</p>
           <h1 className="font-display mt-4 max-w-3xl text-5xl leading-[1.1] tracking-tight text-foreground">
-            SignalBrief Research Agent
+            {industry.headline}
           </h1>
           <p className="mt-6 max-w-2xl text-base leading-relaxed text-muted-foreground">
-            Give the agent an industry, topic, and timeframe. The agent researches the web and
-            delivers an executive-ready briefing with cited sources.
+            {industry.description}
           </p>
         </section>
 
         <section className="border-t border-border py-10">
-          <div className="grid gap-6 md:grid-cols-[1fr_1.4fr_1fr]">
-            <div className="space-y-2">
-              <Label className="rule-label">Industry</Label>
-              <Select value={industry} onValueChange={setIndustry}>
-                <SelectTrigger className="w-full rounded-none border-x-0 border-t-0 border-b bg-transparent px-0 shadow-none">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {INDUSTRY_LIST.map((i) => (
-                    <SelectItem key={i} value={i}>
-                      {i}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
+          <div className="grid gap-6 md:grid-cols-[1.4fr_1fr]">
             <div className="space-y-2">
               <Label className="rule-label">Topic — optional</Label>
               <Input
                 value={topic}
                 onChange={(e) => setTopic(e.target.value)}
-                placeholder="Leave blank for broad industry trends"
+                placeholder={`Leave blank for broad ${industry.name.toLowerCase()} trends`}
                 className="rounded-none border-x-0 border-t-0 border-b bg-transparent px-0 shadow-none focus-visible:ring-0"
               />
             </div>
@@ -155,24 +135,22 @@ function Index() {
             </div>
           </div>
 
-          {suggestions.length > 0 && (
-            <div className="mt-8 flex flex-wrap items-center gap-2">
-              <span className="rule-label mr-1 flex items-center gap-1.5">
-                <Lightbulb className="size-3.5" />
-                Suggested topics
-              </span>
-              {suggestions.map((s) => (
-                <button
-                  key={s}
-                  type="button"
-                  onClick={() => setTopic(s)}
-                  className="border border-border px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:border-accent hover:text-foreground"
-                >
-                  {s}
-                </button>
-              ))}
-            </div>
-          )}
+          <div className="mt-8 flex flex-wrap items-center gap-2">
+            <span className="rule-label mr-1 flex items-center gap-1.5">
+              <Lightbulb className="size-3.5" />
+              Suggested topics
+            </span>
+            {industry.suggestedTopics.map((s) => (
+              <button
+                key={s}
+                type="button"
+                onClick={() => setTopic(s)}
+                className="border border-border px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:border-accent hover:text-foreground"
+              >
+                {s}
+              </button>
+            ))}
+          </div>
 
           <div className="mt-10">
             <Button
@@ -181,18 +159,8 @@ function Index() {
               disabled={mutation.isPending}
               onClick={() => mutation.mutate({})}
             >
-              {mutation.isPending
-                ? "Researching…"
-                : topic.trim().length === 0
-                  ? "Run Broad Industry Briefing"
-                  : "Run Research Agent"}
+              {mutation.isPending ? "Researching…" : `Run ${industry.name} Briefing`}
             </Button>
-            {topic.trim().length === 0 && (
-              <p className="mt-3 text-xs text-muted-foreground">
-                No topic given — the agent will brief on the most consequential developments in{" "}
-                {industry === "All Industries / General" ? "the wider economy" : industry}.
-              </p>
-            )}
           </div>
         </section>
 
@@ -200,22 +168,9 @@ function Index() {
           <section className="my-10 border border-accent/40 bg-secondary/40 p-6">
             <p className="rule-label">Relevance check</p>
             <p className="mt-2 text-sm text-foreground">
-              {fit.message ||
-                `“${topic.trim()}” doesn't look related to ${industry}.`}
+              {fit.message || `“${topic.trim()}” doesn't look related to ${industry.name}.`}
             </p>
             <div className="mt-4 flex flex-wrap gap-3">
-              {fit.suggestedIndustry && (
-                <Button
-                  variant="outline"
-                  className="rounded-none"
-                  onClick={() => {
-                    setIndustry(fit.suggestedIndustry!);
-                    setFit(null);
-                  }}
-                >
-                  Switch to {fit.suggestedIndustry}
-                </Button>
-              )}
               <Button
                 variant="ghost"
                 className="rounded-none"
@@ -234,7 +189,6 @@ function Index() {
           </section>
         )}
 
-
         {mutation.isError && (
           <section className="my-10 flex items-start gap-3 border border-destructive/30 bg-destructive/5 p-6">
             <AlertTriangle className="mt-0.5 size-4 text-destructive" />
@@ -250,12 +204,9 @@ function Index() {
         {briefing && <BriefingOutput briefing={briefing} />}
 
         <section className="border-t border-border py-10">
-          <p className="rule-label">Briefings by industry</p>
-          <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
-            Explore a dedicated briefing page for the industry you follow.
-          </p>
+          <p className="rule-label">More industries</p>
           <div className="mt-4 flex flex-wrap gap-2">
-            {INDUSTRIES.map((i) => (
+            {others.map((i) => (
               <Link
                 key={i.slug}
                 to="/industries/$slug"
