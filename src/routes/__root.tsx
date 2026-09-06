@@ -77,11 +77,18 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Lovable Generated Project" },
-      { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
+      { title: "SignalBrief Research Agent — Executive Briefings from Live Sources" },
+      {
+        name: "description",
+        content:
+          "Give the agent an industry, topic, and timeframe. It researches the live web and returns an executive briefing with cited sources.",
+      },
+      { property: "og:title", content: "SignalBrief Research Agent" },
+      {
+        property: "og:description",
+        content:
+          "Live web research synthesized into an executive-ready briefing with traceable sources.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:site", content: "@Lovable" },

@@ -42,8 +42,10 @@ export const Route = createFileRoute("/")({
           "Live web research synthesized into an executive-ready briefing with traceable sources.",
       },
       { property: "og:type", content: "website" },
+      { property: "og:url", content: "https://brief-point-signal.lovable.app/" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
+    links: [{ rel: "canonical", href: "https://brief-point-signal.lovable.app/" }],
   }),
   component: Index,
 });
