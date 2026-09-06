@@ -1,8 +1,8 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
-import { ArrowUpRight, AlertTriangle, Lightbulb } from "lucide-react";
+import { AlertTriangle, Lightbulb } from "lucide-react";
 
 import {
   runResearch,
@@ -11,7 +11,9 @@ import {
   type Briefing,
   type TopicFit,
 } from "@/lib/research.functions";
+import { INDUSTRIES, GENERAL_TOPICS } from "@/lib/industries";
 import { AgentProgress } from "@/components/AgentProgress";
+import { BriefingOutput } from "@/components/BriefingOutput";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
