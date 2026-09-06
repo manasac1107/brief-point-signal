@@ -94,19 +94,20 @@ function Index() {
       <header className="border-b border-border">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-5">
           <span className="font-display text-lg tracking-tight">SignalBrief</span>
-          <span className="rule-label">Research Agent · V1</span>
+          <span className="rule-label">Research Agent · V2</span>
         </div>
       </header>
 
       <div className="mx-auto max-w-5xl px-6">
         <section className="py-20">
-          <p className="rule-label">Live retrieval · Source-backed synthesis</p>
+          <p className="rule-label">Live retrieval · Self-verified · Fully traceable</p>
           <h1 className="font-display mt-4 max-w-3xl text-5xl leading-[1.1] tracking-tight text-foreground">
             SignalBrief Research Agent
           </h1>
           <p className="mt-6 max-w-2xl text-base leading-relaxed text-muted-foreground">
-            Give the agent an industry, topic, and timeframe. The agent researches the web and
-            delivers an executive-ready briefing with cited sources.
+            Give the agent an industry, topic, and timeframe. The agent plans its own
+            investigation, verifies its own findings, and delivers an executive-ready briefing you
+            can trust — with full traceability back to sources.
           </p>
         </section>
 
@@ -133,7 +134,7 @@ function Index() {
               <Input
                 value={topic}
                 onChange={(e) => setTopic(e.target.value)}
-                placeholder="Leave blank for broad industry trends"
+                placeholder="Enterprise AI agents and workforce impact"
                 className="rounded-none border-x-0 border-t-0 border-b bg-transparent px-0 shadow-none focus-visible:ring-0"
               />
             </div>
