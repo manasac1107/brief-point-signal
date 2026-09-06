@@ -398,7 +398,13 @@ Include statistics and named entities only when they appear in the sources, each
     const rawDevs: any[] = Array.isArray(draft["keyDevelopments"]) ? draft["keyDevelopments"] : [];
     const keyDevelopments: Development[] = rawDevs.map((d) => {
       const idxs: number[] = Array.isArray(d?.sourceIndices)
-        ? [...new Set(d.sourceIndices.filter((n: any) => Number.isInteger(n) && n >= 1 && n <= sources.length))]
+        ? [
+            ...new Set<number>(
+              (d.sourceIndices as any[])
+                .filter((n: any) => Number.isInteger(n) && n >= 1 && n <= sources.length)
+                .map(Number),
+            ),
+          ]
         : [];
       const publishers = new Set(idxs.map((i) => sources[i - 1]!.publisher));
       const independent = publishers.size;
