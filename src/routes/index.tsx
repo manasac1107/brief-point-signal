@@ -48,24 +48,9 @@ export const Route = createFileRoute("/")({
   component: Index,
 });
 
-const INDUSTRIES = INDUSTRY_LIST;
-
 const SUGGESTED_TOPICS: Record<string, string[]> = {
-  "All Industries / General": [
-    "Enterprise AI agents and workforce impact",
-    "Supply chain resilience",
-    "Cost of capital and investment outlook",
-  ],
-  Manufacturing: ["Factory automation and robotics", "Reshoring and capacity investment", "Industrial AI and predictive maintenance"],
-  Pharma: ["Pharmacy benefit managers (PBM) reform", "GLP-1 market dynamics", "Clinical trial AI and drug discovery"],
-  Finance: ["Basel III endgame and capital rules", "AI in risk and compliance", "Private credit growth"],
-  Retail: ["Consumer spending shifts", "Retail media networks", "AI-driven personalisation"],
-  "Public Sector": ["Government AI procurement", "Digital public infrastructure", "Public healthcare funding"],
-  Energy: ["Grid capacity and data centre demand", "LNG market dynamics", "Renewables project economics"],
-  Automotive: ["EV demand and pricing pressure", "Software-defined vehicles", "Battery supply chain"],
-  IT: ["Enterprise AI agents and workforce impact", "Cloud cost optimisation", "Cybersecurity threat landscape"],
-  Logistics: ["Freight rates and capacity", "Warehouse automation", "Shipping route disruption"],
-  Sustainability: ["CSRD and reporting requirements", "Carbon markets", "Scope 3 emissions in supply chains"],
+  "All Industries / General": GENERAL_TOPICS,
+  ...Object.fromEntries(INDUSTRIES.map((i) => [i.name, i.suggestedTopics])),
 };
 
 const TIMEFRAMES = [
@@ -73,16 +58,6 @@ const TIMEFRAMES = [
   { value: "30", label: "Last 30 Days" },
   { value: "90", label: "Last 90 Days" },
 ] as const;
-
-function Section({ label, title, children }: { label: string; title: string; children: React.ReactNode }) {
-  return (
-    <section className="border-t border-border pt-8">
-      <p className="rule-label">{label}</p>
-      <h2 className="font-display mt-2 text-2xl text-foreground">{title}</h2>
-      <div className="mt-6">{children}</div>
-    </section>
-  );
-}
 
 function Index() {
   const [industry, setIndustry] = useState("Manufacturing");
